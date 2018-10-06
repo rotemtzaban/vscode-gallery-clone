@@ -1,0 +1,15 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es2017",
+        "strict": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "moduleResolution": "node",
+        "outDir": "dist",
+        "lib": ["es2017", "dom"],
+        "esModuleInterop": true
+    },
+    "include": ["server/**/*"]
+}
