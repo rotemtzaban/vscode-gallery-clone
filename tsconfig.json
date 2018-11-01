@@ -9,7 +9,8 @@
         "moduleResolution": "node",
         "outDir": "dist",
         "lib": ["es2017", "dom"],
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "typeRoots": ["./node_modules/@types", "./typings"]
     },
-    "include": ["server/**/*"]
+    "include": ["server/**/*", "typings/bunyan-logstash-tcp/index.d.ts", "typings/bunyan-logstash-tcp/bunyan-logstash-tcp.d.ts"]
 }

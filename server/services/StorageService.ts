@@ -2,12 +2,28 @@ import { IStorageService } from './IStorageService';
 import { IExtension } from '../models/extension';
 import fs from 'fs';
 import { promisify } from 'util';
+import { ISettings } from '../settings';
+import path from 'path';
+import mkdirp from 'mkdirp-then';
 export default class StorageService implements IStorageService {
-    public async saveFile(buffer: Buffer, path: string) {
-        await promisify(fs.writeFile)(path, buffer);
+    public getFileBuffer(filePath: string): Promise<Buffer> {
+        return promisify(fs.readFile)(filePath);
     }
-    
-    public getPath(extension: IExtension) {
-        return extension.id;
+    public getFileStream(filePath: string): NodeJS.ReadableStream {
+        return fs.createReadStream(filePath);
+    }
+    constructor(private readonly settings: ISettings) {}
+
+    public async saveFile(buffer: Buffer, filePath: string) {
+        await mkdirp(path.dirname(filePath));
+        await promisify(fs.writeFile)(filePath, buffer);
+    }
+
+    public getPath(publisher: string, packageId: string, version: string) {
+        return path.resolve(
+            this.settings.storage.location,
+            packageId,
+            `${publisher}.${packageId}-${version}.vsix`
+        );
     }
 }

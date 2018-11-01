@@ -17,7 +17,7 @@ interface IMeteadataItem {
     count: number;
 }
 
-interface IRawGalleryExtension {
+export interface IRawGalleryExtension {
     extensionId: string;
     extensionName: string;
     displayName: string;
@@ -32,9 +32,9 @@ interface IRawGalleryExtension {
     statistics: IRawGalleryExtensionStatistics[];
 }
 
-interface IRawGalleryExtensionVersion {
+export interface IRawGalleryExtensionVersion {
     version: string;
-    lastUpdated: string;
+    lastUpdated?: string;
     assetUri: string;
     fallbackAssetUri: string;
     files: IRawGalleryExtensionFile[];
@@ -57,17 +57,17 @@ interface IRawGalleryExtensionProperty {
 }
 
 export const AssetType = {
-    Changelog: "Microsoft.VisualStudio.Services.Content.Changelog",
-    Details: "Microsoft.VisualStudio.Services.Content.Details",
-    Icon: "Microsoft.VisualStudio.Services.Icons.Default",
-    License: "Microsoft.VisualStudio.Services.Content.License",
-    Manifest: "Microsoft.VisualStudio.Code.Manifest",
-    Repository: "Microsoft.VisualStudio.Services.Links.Source",
-    VSIX: "Microsoft.VisualStudio.Services.VSIXPackage"
+    Changelog: 'Microsoft.VisualStudio.Services.Content.Changelog',
+    Details: 'Microsoft.VisualStudio.Services.Content.Details',
+    Icon: 'Microsoft.VisualStudio.Services.Icons.Default',
+    License: 'Microsoft.VisualStudio.Services.Content.License',
+    Manifest: 'Microsoft.VisualStudio.Code.Manifest',
+    Repository: 'Microsoft.VisualStudio.Services.Links.Source',
+    VSIX: 'Microsoft.VisualStudio.Services.VSIXPackage'
 };
 
 export const PropertyType = {
-    Dependency: "Microsoft.VisualStudio.Code.ExtensionDependencies",
-    Engine: "Microsoft.VisualStudio.Code.Engine",
-    ExtensionPack: "Microsoft.VisualStudio.Code.ExtensionPack"
+    Dependency: 'Microsoft.VisualStudio.Code.ExtensionDependencies',
+    Engine: 'Microsoft.VisualStudio.Code.Engine',
+    ExtensionPack: 'Microsoft.VisualStudio.Code.ExtensionPack'
 };

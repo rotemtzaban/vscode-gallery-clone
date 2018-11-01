@@ -1,8 +1,18 @@
-import { IExtension } from "../models/extension";
-import { IRawGalleryQueryResults } from "../models/extension-types";
-import { IQuery } from "../models/query";
+import { IExtension, IDbExtension, IExtensionVersionInfo } from '../models/extension';
+import { IRawGalleryQueryResults } from '../models/extension-types';
+import { IQuery } from '../models/query';
 
 export interface IDalService {
-    indexDocument (extension: IExtension, path: string):Promise<void>;
-    queryExtensions(query: IQuery):Promise<IRawGalleryQueryResults>;
+    storeExtension(extension: IExtension): Promise<void>;
+    queryExtensions(query: IQuery): Promise<{totalCount:number, results:IDbExtension[]}>;
+    getExtensionVersion(
+        id: string,
+        publisher: string,
+        version: string
+    ): Promise<IExtensionVersionInfo | null>;
+    exists(
+        id: string,
+        publisher: string,
+        version: string
+    ): Promise<boolean>;
 }

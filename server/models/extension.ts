@@ -1,19 +1,23 @@
-import {} from './extension-types';
+import { } from './extension-types';
 
 export type IExtension = IExtensionInfo & IExtensionVersionInfo;
 
+export interface IDbExtension extends IExtensionInfo {
+    versions: IExtensionVersionInfo[];
+}
+
 export interface IExtensionInfo {
-    id: string;
+    packageId: string;
     publisher: string;
-    version: string;
     displayName: string;
     description: string;
+    categories: string[];
+    galleryFlags: string[];
+    tags: string[];
 }
 
 export interface IExtensionVersionInfo {
-    tags: string[];
-    categories: string[];
-    galleryFlags: string[];
+    version: string;
     properties: Array<{ key: string; value: string }>;
     assets: IAsset[];
 }

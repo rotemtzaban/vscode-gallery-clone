@@ -38,7 +38,9 @@ export async function convertXml(extensionXml: string): Promise<IExtension> {
         description,
         properties,
         galleryFlags,
-        ...identity
+        publisher: identity.publisher,
+        version: identity.version,
+        packageId: identity.id
     };
 }
 
@@ -82,7 +84,7 @@ interface ExtensionMetadata {
 }
 
 interface ExtensionInstallation {
-    installationTarget: Attrs<{ id: string }>;
+    installationTarget: Attrs<{ id: string; version: string }>;
 }
 
 interface ExtensionBadge {

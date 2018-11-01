@@ -8,38 +8,51 @@ import StorageService from './services/StorageService';
 import { ZipService } from './services/IZipService';
 import mount from 'koa-mount';
 import koaStatic from 'koa-static';
+import settings from './settings';
+import logger from './logger';
+logger.info(settings);
 
-const apiController = new Contoller(
-    new DalService(),
-    new StorageService(),
-    new ZipService()
-);
-const app = new Koa();
-const router = new Router({ prefix: '/api' });
+DalService.create(settings).then(dalService => {
+    const apiController = new Contoller(
+        dalService,
+        new StorageService(settings),
+        new ZipService()
+    );
 
-router.use(bodyParser());
-app.use(router.routes());
+    const app = new Koa();
+    app.proxy = true;
+    const router = new Router({ prefix: '/api' });
 
-router.get(
-    '/publishers/:publisher/vsextensions/:name/:version/vspackage',
-    apiController.downloadPackage
-);
+    router.use(bodyParser());
+    app.use(router.routes());
 
-router.get(
-    '/publishers/:publisher/extensions/:name/:version/stats',
-    apiController.reportStatistic
-);
+    router.get(
+        '/publishers/:publisher/vsextensions/:name/:version/vspackage',
+        apiController.downloadPackage
+    );
 
-router.post('/extensionQuery', apiController.query);
+    router.get(
+        '/publishers/:publisher/vsextensions/:name/:version/vspackage/:asset',
+        apiController.downloadAsset
+    );
 
-router.post(
-    '/extensionUpload',
-    multer({ storage: multer.memoryStorage() }).single('extension'),
-    apiController.upload
-);
+    router.get(
+        '/publishers/:publisher/extensions/:name/:version/stats',
+        apiController.reportStatistic
+    );
 
-// router.get('/client', koaStatic('public'));
-// router.get(/^\/client.*/, koaStatic('public'));
-app.use(mount('/client', koaStatic('public')));
-// mount('client')
-app.listen(3000);
+    router.post('/extensionQuery', apiController.query);
+
+    router.post(
+        '/extensionUpload',
+        multer({ storage: multer.memoryStorage() }).single('extension'),
+        apiController.upload
+    );
+    app.use(mount('/client/', koaStatic('public', {})));
+    app.use(
+        mount('/client', ctx => {
+            ctx.redirect('/client/index.html');
+        })
+    );
+    app.listen(3000);
+});

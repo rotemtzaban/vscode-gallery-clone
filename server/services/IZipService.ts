@@ -5,7 +5,7 @@ import { parseXmlAsync } from '../utils';
 import { convertXml } from './xmlConverter';
 export interface IZipService {
     extractData(data: Buffer): Promise<IExtension>;
-    getFile(data: Buffer, fileName: string): Promise<Buffer>;
+    getFile(data: Buffer | NodeJS.ReadableStream, fileName: string): Promise<Buffer>;
 }
 
 export class ZipService implements IZipService {
@@ -16,8 +16,11 @@ export class ZipService implements IZipService {
         return result;
     }
 
-    public async getFile(data: Buffer, fileName: string): Promise<Buffer> {
+    public async getFile(
+        data: Buffer | NodeJS.ReadableStream,
+        fileName: string
+    ): Promise<Buffer> {
         const zip = await jszip.loadAsync(data);
-        return zip.file(fileName).async('nodebuffer');
+        return Buffer.from(await zip.file(fileName).async('arraybuffer'));
     }
 }
