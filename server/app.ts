@@ -10,6 +10,7 @@ import mount from 'koa-mount';
 import koaStatic from 'koa-static';
 import settings from './settings';
 import logger from './logger';
+import swaggerUI from 'koa2-swagger-ui';
 logger.info(settings);
 
 DalService.create(settings).then(dalService => {
@@ -48,10 +49,25 @@ DalService.create(settings).then(dalService => {
         multer({ storage: multer.memoryStorage() }).single('extension'),
         apiController.upload
     );
-    app.use(mount('/client/', koaStatic('public', {})));
+    app.use(mount('/client/', koaStatic('public')));
+    app.use(koaStatic('api'));
+    app.use(
+        swaggerUI({
+            routePrefix: '/swagger',
+            swaggerOptions: {
+                url: 'swagger.yaml'
+            }
+        })
+    );
+    // app.use(mount('/swagger/ui/', koaStatic(require('swagger-ui-dist').absolutePath())));
     app.use(
         mount('/client', ctx => {
-            ctx.redirect('/client/index.html');
+            ctx.redirect('/client/');
+        })
+    );
+    app.use(
+        mount('/swagger/ui', ctx => {
+            ctx.redirect('/swagger/ui/');
         })
     );
     app.listen(3000);

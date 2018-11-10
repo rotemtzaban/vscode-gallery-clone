@@ -1,0 +1,22 @@
+openapi: '3.0.0'
+info:
+    description: 'Some desc'
+    version: '1.0'
+    title: 'title'
+paths:
+    /api/extensionUpload:
+        post:
+            requestBody:
+                required: true
+                content:
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                extension:
+                                    type: string
+                                    format: binary
+            description: 'desc'
+            responses:
+                '200':
+                    description: 'ok response'
