@@ -49,7 +49,6 @@ DalService.create(settings).then(dalService => {
         multer({ storage: multer.memoryStorage() }).single('extension'),
         apiController.upload
     );
-    app.use(mount('/client/', koaStatic('public')));
     app.use(koaStatic('api'));
     app.use(
         swaggerUI({
@@ -59,12 +58,7 @@ DalService.create(settings).then(dalService => {
             }
         })
     );
-    // app.use(mount('/swagger/ui/', koaStatic(require('swagger-ui-dist').absolutePath())));
-    app.use(
-        mount('/client', ctx => {
-            ctx.redirect('/client/');
-        })
-    );
+   
     app.use(
         mount('/swagger/ui', ctx => {
             ctx.redirect('/swagger/ui/');
