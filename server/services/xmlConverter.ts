@@ -45,7 +45,7 @@ export async function convertXml(extensionXml: string): Promise<IExtension> {
 }
 
 const parseRawArray = (rawText: Text) => {
-    const text = rawText[0]._;
+    const text = rawText[0] && rawText[0]._;
     return text ? text.split(',') : [];
 };
 
