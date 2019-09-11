@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gallery-clone
+spec:
+  selector:
+    matchLabels:
+      app: gallery-clone
+  template:
+    metadata:
+      labels:
+        app: gallery-clone
+    spec:
+      containers:
+      - name: gallery-clone
+        image: rotemt/gallery-clone
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: config-volume
+          mountPath: /service/config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: gallery-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gallery-clone
+spec:
+  selector:
+    app: gallery-clone
+  ports:
+  - port: 80
+    targetPort: 80
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: tls-example-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 30m
+spec:
+  tls:
+  - hosts:
+    - localhost
+    secretName: nginx-cert
+  backend:
+    serviceName: gallery-clone
+    servicePort: 80

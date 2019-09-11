@@ -59,10 +59,5 @@ DalService.create(settings).then(dalService => {
         })
     );
    
-    app.use(
-        mount('/swagger/ui', ctx => {
-            ctx.redirect('/swagger/ui/');
-        })
-    );
-    app.listen(3000);
+    app.listen(settings.port);
 });

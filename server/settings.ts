@@ -1,6 +1,7 @@
 import config from 'config';
 
 export interface ISettings {
+    port: number;
     database: {
         connectionString: string;
         databaseName: string;

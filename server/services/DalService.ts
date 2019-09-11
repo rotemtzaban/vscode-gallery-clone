@@ -281,7 +281,7 @@ export default class DalService implements IDalService {
     public static async create(settings: ISettings): Promise<IDalService> {
         const client = await MongoClient.connect(
             settings.database.connectionString,
-            { useNewUrlParser: true }
+            { useNewUrlParser: true, useUnifiedTopology:true }
         );
 
         const db = client.db(settings.database.databaseName);
