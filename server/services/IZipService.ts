@@ -1,7 +1,5 @@
 import jszip from 'jszip';
-import { processors } from 'xml2js';
 import { IExtension } from '../models/extension';
-import { parseXmlAsync } from '../utils';
 import { convertXml } from './xmlConverter';
 export interface IZipService {
     extractData(data: Buffer): Promise<IExtension>;

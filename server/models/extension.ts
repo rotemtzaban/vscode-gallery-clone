@@ -1,5 +1,3 @@
-import { } from './extension-types';
-
 export type IExtension = IExtensionInfo & IExtensionVersionInfo;
 
 export interface IDbExtension extends IExtensionInfo {

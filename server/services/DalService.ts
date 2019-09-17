@@ -7,13 +7,12 @@ import {
 import { IQuery, FilterType, SortBy, SortOrder, Flags } from '../models/query';
 import _ from 'lodash';
 import {
-    IRawGalleryQueryResults,
     IRawGalleryExtension,
     IRawGalleryExtensionVersion
 } from '../models/extension-types';
 import { IDalService } from './IDalService';
 
-import mongodb, { UpdateQuery, FilterQuery, MongoClient } from 'mongodb';
+import mongodb, { FilterQuery, MongoClient } from 'mongodb';
 import { ISettings } from '../settings';
 export default class DalService implements IDalService {
     constructor(private readonly collection: mongodb.Collection<IDbExtension>) {}

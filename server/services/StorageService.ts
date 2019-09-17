@@ -1,5 +1,4 @@
 import { IStorageService } from './IStorageService';
-import { IExtension } from '../models/extension';
 import fs from 'fs';
 import { promisify } from 'util';
 import { ISettings } from '../settings';

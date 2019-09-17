@@ -6,11 +6,10 @@ import multer from 'koa-multer';
 import DalService from './services/DalService';
 import StorageService from './services/StorageService';
 import { ZipService } from './services/IZipService';
-import mount from 'koa-mount';
 import koaStatic from 'koa-static';
 import settings from './settings';
 import logger from './logger';
-import swaggerUI from 'koa2-swagger-ui';
+import mount from 'koa-mount';
 logger.info(settings);
 
 DalService.create(settings).then(dalService => {
@@ -26,7 +25,7 @@ DalService.create(settings).then(dalService => {
 
     router.use(bodyParser());
     app.use(router.routes());
-
+    router.get('/isalive', (ctx) => {ctx.body = true});
     router.get(
         '/publishers/:publisher/vsextensions/:name/:version/vspackage',
         apiController.downloadPackage
@@ -49,15 +48,11 @@ DalService.create(settings).then(dalService => {
         multer({ storage: multer.memoryStorage() }).single('extension'),
         apiController.upload
     );
-    app.use(koaStatic('api'));
-    app.use(
-        swaggerUI({
-            routePrefix: '/swagger',
-            swaggerOptions: {
-                url: 'swagger.yaml'
-            }
-        })
-    );
+
+    const swaggerApp = new Koa();
+    swaggerApp.use(koaStatic('swagger-ui-dist'))
+    swaggerApp.use(koaStatic('api'));
+    app.use(mount('/swagger', swaggerApp));
    
     app.listen(settings.port);
 });

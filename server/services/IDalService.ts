@@ -1,5 +1,4 @@
 import { IExtension, IDbExtension, IExtensionVersionInfo } from '../models/extension';
-import { IRawGalleryQueryResults } from '../models/extension-types';
 import { IQuery } from '../models/query';
 
 export interface IDalService {
