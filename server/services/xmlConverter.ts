@@ -40,7 +40,7 @@ export async function convertXml(extensionXml: string): Promise<IExtension> {
         galleryFlags,
         publisher: identity.publisher,
         version: identity.version,
-        packageId: identity.id
+        name: identity.id
     };
 }
 

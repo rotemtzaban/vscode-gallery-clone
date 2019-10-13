@@ -3,7 +3,7 @@ import fs from 'fs';
 import { promisify } from 'util';
 import { ISettings } from '../settings';
 import path from 'path';
-import mkdirp from 'mkdirp-then';
+import mkdirp from 'mkdirp-promise';
 export default class StorageService implements IStorageService {
     public getFileBuffer(filePath: string): Promise<Buffer> {
         return promisify(fs.readFile)(filePath);
@@ -18,11 +18,11 @@ export default class StorageService implements IStorageService {
         await promisify(fs.writeFile)(filePath, buffer);
     }
 
-    public getPath(publisher: string, packageId: string, version: string) {
+    public getPath(publisher: string, name: string, version: string) {
         return path.resolve(
             this.settings.storage.location,
-            packageId,
-            `${publisher}.${packageId}-${version}.vsix`
+            name,
+            `${publisher}.${name}-${version}.vsix`
         );
     }
 }

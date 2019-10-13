@@ -5,12 +5,12 @@ export interface IDalService {
     storeExtension(extension: IExtension): Promise<void>;
     queryExtensions(query: IQuery): Promise<{totalCount:number, results:IDbExtension[]}>;
     getExtensionVersion(
-        id: string,
+        name: string,
         publisher: string,
         version: string
     ): Promise<IExtensionVersionInfo | null>;
     exists(
-        id: string,
+        name: string,
         publisher: string,
         version: string
     ): Promise<boolean>;

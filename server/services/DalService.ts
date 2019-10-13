@@ -6,20 +6,16 @@ import {
 } from '../models/extension';
 import { IQuery, FilterType, SortBy, SortOrder, Flags } from '../models/query';
 import _ from 'lodash';
-import {
-    IRawGalleryExtension,
-    IRawGalleryExtensionVersion
-} from '../models/extension-types';
 import { IDalService } from './IDalService';
 
-import mongodb, { FilterQuery, MongoClient } from 'mongodb';
+import mongodb, { FilterQuery, MongoClient, UpdateQuery, ObjectID } from 'mongodb';
 import { ISettings } from '../settings';
 export default class DalService implements IDalService {
     constructor(private readonly collection: mongodb.Collection<IDbExtension>) {}
 
     public async storeExtension(extension: IExtension) {
         const extensionInfo: IExtensionInfo = {
-            packageId: extension.packageId,
+            name: extension.name,
             publisher: extension.publisher,
             description: extension.description,
             categories: extension.categories,
@@ -36,7 +32,7 @@ export default class DalService implements IDalService {
             properties: extension.properties
         };
 
-        const update: Update<IDbExtension> = {
+        const update: UpdateQuery<IDbExtension> = {
             $setOnInsert: { ...upsert },
             $push: {
                 versions: { $each: [versionInfo], $sort: { version: -1 } }
@@ -47,7 +43,7 @@ export default class DalService implements IDalService {
             }
         };
         await this.collection.updateOne(
-            { packageId: extension.packageId, publisher: extension.publisher },
+            { name: extension.name, publisher: extension.publisher },
             update,
             { upsert: true }
         );
@@ -73,54 +69,6 @@ export default class DalService implements IDalService {
             .skip(skip)
             .toArray();
         return { results, totalCount: count };
-        // return {
-        //     results: [
-        //         {
-        //             resultMetadata: [
-        //                 {
-        //                     metadataType: 'ResultCount',
-        //                     metadataItems: [
-        //                         {
-        //                             name: 'TotalCount',
-        //                             count
-        //                         }
-        //                     ]
-        //                 }
-        //             ],
-        //             extensions: results.map(this.mapExtensions)
-        //         }
-        //     ]
-        // };
-    }
-
-    private mapExtensions(ext: IDbExtension): IRawGalleryExtension {
-        return {
-            displayName: ext.displayName,
-            extensionId: ext.packageId,
-            extensionName: ext.packageId,
-            flags: ext.galleryFlags.join(', '),
-            publisher: {
-                displayName: ext.publisher,
-                publisherId: ext.publisher,
-                publisherName: ext.publisher
-            },
-            shortDescription: ext.description,
-            statistics: [],
-            versions: ext.versions.map(this.mapVersion)
-        };
-        // throw new Error('Method not implemented.');
-    }
-    private mapVersion(version: IExtensionVersionInfo): IRawGalleryExtensionVersion {
-        return {
-            properties: version.properties,
-            version: version.version,
-            files: version.assets.map(asset => {
-                return { assetType: asset.type, source: asset.path };
-            }),
-            assetUri: '',
-            fallbackAssetUri: ''
-        };
-        // throw new Error('Method not implemented.');
     }
 
     private getSort(query: IQuery) {
@@ -197,10 +145,9 @@ export default class DalService implements IDalService {
         const ids = criteria
             .filter(
                 criterium =>
-                    criterium.filterType === FilterType.ExtensionId ||
-                    criterium.filterType === FilterType.ExtensionName
+                    criterium.filterType === FilterType.ExtensionId
             )
-            .map(c => c.value);
+            .map(c => c.value).map(value => new ObjectID(value));
 
         const names = criteria
             .filter(criterium => criterium.filterType === FilterType.ExtensionName)
@@ -222,7 +169,14 @@ export default class DalService implements IDalService {
         const idsFilter: FilterQuery<IDbExtension> =
             ids.length > 0
                 ? {
-                      packageId: { $in: ids.concat(names) }
+                      _id: { $in: ids }
+                  }
+                : {};
+
+        const namesFilter: FilterQuery<IDbExtension> =
+            names.length > 0
+                ? {
+                      name: { $in: names }
                   }
                 : {};
 
@@ -248,6 +202,7 @@ export default class DalService implements IDalService {
 
         return {
             ...idsFilter,
+            ...namesFilter,
             ...tagsFilter,
             ...categoriesFilter,
             ...targetFilter,
@@ -255,9 +210,9 @@ export default class DalService implements IDalService {
         };
     }
 
-    public async getExtensionVersion(id: string, publisher: string, version: string) {
+    public async getExtensionVersion(name: string, publisher: string, version: string) {
         const extensions = await this.collection
-            .find({ packageId: id, publisher, 'versions.version': version })
+            .find({ name, publisher, 'versions.version': version })
             .limit(1)
             .toArray();
 
@@ -268,9 +223,9 @@ export default class DalService implements IDalService {
         return extensions[0].versions.find(ver => ver.version === version) || null;
     }
 
-    public async exists(id: string, publisher: string, version: string) {
+    public async exists(name: string, publisher: string, version: string) {
         const extensions = await this.collection
-            .find({ packageId: id, publisher, 'versions.version': version })
+            .find({ name, publisher, 'versions.version': version })
             .limit(1)
             .toArray();
 
@@ -278,10 +233,12 @@ export default class DalService implements IDalService {
     }
 
     public static async create(settings: ISettings): Promise<IDalService> {
-        const client = await MongoClient.connect(
-            settings.database.connectionString,
-            { useNewUrlParser: true, useUnifiedTopology:true }
-        );
+        const client = await MongoClient.connect(settings.database.connectionString, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            reconnectTries: Infinity,
+            bufferMaxEntries: 0
+        });
 
         const db = client.db(settings.database.databaseName);
 
@@ -292,7 +249,7 @@ export default class DalService implements IDalService {
         const text: IndexType<IDbExtension> = {
             description: 'text',
             displayName: 'text',
-            packageId: 'text',
+            name: 'text',
             publisher: 'text',
             'versions.tags': 'text',
             'versions.categories': 'text'
@@ -301,36 +258,13 @@ export default class DalService implements IDalService {
         collection.createIndex(text, { name: 'fullText', collation: { locale: 'simple' } });
 
         const packageIndex: IndexType<IDbExtension> = {
-            packageId: 1,
+            name: 1,
             publisher: 1
         };
 
         collection.createIndex(packageIndex, { unique: true });
         return new DalService(collection);
     }
-}
-
-interface Update<T> {
-    $addToSet?: Partial<{ [P in keyof T]: AddToSet<T, P> }>;
-    $push?: Partial<{ [P in keyof T]: Push<T, P> }>;
-    $setOnInsert?: Partial<T>;
-}
-
-type AddToSet<T, P extends keyof T> = T[P] extends Array<infer R>
-    ? R | AddToSetEach<R>
-    : never;
-
-type Push<T, P extends keyof T> = T[P] extends Array<infer R> ? R | PushEach<R> : never;
-
-interface PushEach<R> {
-    $each: R[];
-    $sort?: object;
-    $slice?: number;
-    $position?: number;
-}
-
-interface AddToSetEach<R> {
-    $each: R[];
 }
 
 type IndexType<T> = { [P in keyof T]: 'text' | -1 | 1 } | { [key: string]: 'text' | -1 | 1 };

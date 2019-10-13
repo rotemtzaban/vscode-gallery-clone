@@ -52,7 +52,8 @@ DalService.create(settings).then(dalService => {
     const swaggerApp = new Koa();
     swaggerApp.use(koaStatic('swagger-ui-dist'))
     swaggerApp.use(koaStatic('api'));
-    app.use(mount('/swagger', swaggerApp));
+    app.use(mount('/swagger/', swaggerApp));
+    app.use(mount('/swagger', (ctx:Koa.Context) => ctx.redirect('/swagger/')));
    
     app.listen(settings.port);
 });

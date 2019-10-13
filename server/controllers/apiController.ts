@@ -13,6 +13,8 @@ import {
     AssetType
 } from '../models/extension-types';
 
+import mime from 'mime-types';
+
 export default class ApiController {
     constructor(
         private readonly dal: IDalService,
@@ -31,6 +33,7 @@ export default class ApiController {
         if(params.asset === AssetType.VSIX){
             return this.downloadPackage(ctx);
         }
+        
         const extension = await this.dal.getExtensionVersion(
             params.name,
             params.publisher,
@@ -44,6 +47,9 @@ export default class ApiController {
                     await this.storage.getFileBuffer(path),
                     assetFile
                 );
+
+                const contentType = mime.lookup(assetFile) || 'application/octet-stream';
+                ctx.response.type = contentType;
             } else {
                 ctx.status = 404;
                 ctx.body = 'requsted asset does not exist';
@@ -80,7 +86,7 @@ export default class ApiController {
 
         const path = this.storage.getPath(
             extensionData.publisher,
-            extensionData.packageId,
+            extensionData.name,
             extensionData.version
         );
 
@@ -92,7 +98,7 @@ export default class ApiController {
 
     private async extensionExists(extension: IExtension) {
         const exists = await this.dal.exists(
-            extension.packageId,
+            extension.name,
             extension.publisher,
             extension.version
         );
@@ -125,8 +131,8 @@ function convertExtensionsToRawFormat(
                 extensions: queryResult.results.map(ext => {
                     const extension: IRawGalleryExtension = {
                         displayName: ext.displayName,
-                        extensionId: ext.packageId,
-                        extensionName: ext.packageId,
+                        extensionId: ext._id!.toHexString(),
+                        extensionName: ext.name,
                         flags: ext.galleryFlags.join(', '),
                         publisher: {
                             displayName: ext.publisher,
@@ -138,7 +144,7 @@ function convertExtensionsToRawFormat(
                         versions: ext.versions.map(ver => {
                             const assetUrl = `${ctx.URL.origin}/api/publishers/${
                                 ext.publisher
-                            }/vsextensions/${ext.packageId}/${ver.version}/vspackage`;
+                            }/vsextensions/${ext.name}/${ver.version}/vspackage`;
                             const version: IRawGalleryExtensionVersion = {
                                 version: ver.version,
                                 properties: ver.properties,

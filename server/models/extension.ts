@@ -1,3 +1,5 @@
+import { ObjectID } from "bson";
+
 export type IExtension = IExtensionInfo & IExtensionVersionInfo;
 
 export interface IDbExtension extends IExtensionInfo {
@@ -5,7 +7,8 @@ export interface IDbExtension extends IExtensionInfo {
 }
 
 export interface IExtensionInfo {
-    packageId: string;
+    _id?: ObjectID;
+    name: string;
     publisher: string;
     displayName: string;
     description: string;
