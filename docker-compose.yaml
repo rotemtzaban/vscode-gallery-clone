@@ -1,22 +1,22 @@
-version: '3'
-services: 
-  gallery-clone: 
+version: "3"
+services:
+  gallery-clone:
     build: .
     ports:
-    - "80:80"
+      - 80:80
     volumes:
-    - "D:\\test:/service/config"
-    - "D:\\data:/data"
-    networks: 
-    - "db"
-    depends_on: 
-    - "mongo"
+      - D:\\test:/service/config
+      - D:\\data:/data
+    networks:
+      - db
+    depends_on:
+      - mongo
   mongo:
     image: mongo:4.2.0
     container_name: mongo
     ports:
-    - "27017"
-    networks: 
-    - "db"
-networks: 
+      - "27017"
+    networks:
+      - db
+networks:
   db:
